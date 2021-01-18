@@ -248,7 +248,3 @@ $RECYCLE.BIN/
 
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
-
-# lab13 program
-server_basic server_process
-**/*._sobel.bmp
