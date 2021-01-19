@@ -15,7 +15,7 @@ int main(void) {
      * It might be worthwhile to look up how printf works for your future
      * debugging needs... */
     printf("Berkeley eccentrics:\n");
-	/* This line works the same way as printf; more on this in exercise 6*/
+	/* This line works the same way as printf; more on this in exercise 4*/
 	fprintf(stdout,"====================\n");
 
     /* for loop */
