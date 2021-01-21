@@ -15,8 +15,8 @@ int main(void) {
      * It might be worthwhile to look up how printf works for your future
      * debugging needs... */
     printf("Berkeley eccentrics:\n");
-	/* This line works the same way as printf; more on this in exercise 4*/
-	fprintf(stdout,"====================\n");
+    /* This line works the same way as printf; more on this in exercise 4*/
+    fprintf(stdout,"====================\n");
 
     /* for loop */
     for (a = 0; a < V0; a++)
@@ -36,7 +36,7 @@ int main(void) {
     case 2:
         printf("Chinese Erhu Guy\n");
     case 3:
-	case 4:
+    case 4:
         printf("Yoshua\n");
         break;
     case 5:
