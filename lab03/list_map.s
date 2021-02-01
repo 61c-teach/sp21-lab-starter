@@ -3,29 +3,47 @@
 .text
 main:
     jal ra, create_default_list
-    add s0, a0, x0 # a0 = s0 is head of node list
+    add s0, a0, x0 # a0 (and now s0) is the head of node list
 
-    #print the list
+    # Print the list
     add a0, s0, x0
     jal ra, print_list
-
-    # print a newline
+    # Print a newline
     jal ra, print_newline
 
-    # load your args
-    add a0, s0, x0 # load the address of the first node into a0
+    # === Calling `map(head, &square)` ===
+    # Load function arguments
+    add a0, s0, x0 # Loads the address of the first node into a0
 
-    # load the address of the function in question into a1 (check out la on the green sheet)
+    # Load the address of the "square" function into a1 (hint: check out "la" on the green sheet)
     ### YOUR CODE HERE ###
 
-    # issue the call to map
+
+    # Issue the call to map
     jal ra, map
 
-    # print the list
+    # Print the squared list
     add a0, s0, x0
     jal ra, print_list
+    jal ra, print_newline
 
-    # print another newline
+    # === Calling `map(head, &increment)` ===
+    # Because our `map` function modifies the list in-place, the increment takes place after
+    # the square does
+
+    # Load function arguments
+    add a0, s0, x0 # Loads the address of the first node into a0
+    
+    # Load the addres of the "increment" function into a1 (should be very similar to before)
+    ### YOUR CODE HERE ###
+
+
+    # Issue the call to map
+    jal ra, map
+
+    # Print incremented list
+    add a0, s0, x0
+    jal ra, print_list
     jal ra, print_newline
 
     addi a0, x0, 10
@@ -43,7 +61,7 @@ map:
     # Remember that each node is 8 bytes long: 4 for the value followed by 4 for the pointer to next.
     # What does this tell you about how you access the value and how you access the pointer to next?
 
-    # load the value of the current node into a0
+    # Load the value of the current node into a0
     # THINK: why a0?
     ### YOUR CODE HERE ###
 
@@ -51,12 +69,12 @@ map:
     # What function? Recall the parameters of "map"
     ### YOUR CODE HERE ###
 
-    # store the returned value back into the node
+    # Store the returned value back into the node
     # Where can you assume the returned value is?
     ### YOUR CODE HERE ###
 
     # Load the address of the next node into a0
-    # The Address of the next node is an attribute of the current node.
+    # The address of the next node is an attribute of the current node.
     # Think about how structs are organized in memory.
     ### YOUR CODE HERE ###
 
@@ -64,7 +82,7 @@ map:
     # THINK: why a1? What about a0?
     ### YOUR CODE HERE ###
 
-    # recurse
+    # Recurse
     ### YOUR CODE HERE ###
 
 done:
@@ -73,24 +91,33 @@ done:
 
     jr ra # Return to caller
 
+# === Definition of the "square" function ===
 square:
-    mul a0 ,a0, a0
+    mul a0, a0, a0
     jr ra
+
+# === Definition of the "increment" function ===
+increment:
+    addi a0, a0, 1
+    jr ra
+
+# === Helper functions ===
+# You don't need to understand these, but reading them may be useful
 
 create_default_list:
     addi sp, sp, -12
     sw ra, 0(sp)
     sw s0, 4(sp)
     sw s1, 8(sp)
-    li s0, 0            # pointer to the last node we handled
-    li s1, 0            # number of nodes handled
+    li s0, 0            # Pointer to the last node we handled
+    li s1, 0            # Number of nodes handled
 loop:                   # do...
     li a0, 8
-    jal ra, malloc      #     get memory for the next node
+    jal ra, malloc      #     Allocate memory for the next node
     sw s1, 0(a0)        #     node->value = i
     sw s0, 4(a0)        #     node->next = last
-    add s0, a0, x0      # last = node
-    addi s1, s1, 1      # i++
+    add s0, a0, x0      #     last = node
+    addi s1, s1, 1      #     i++
     addi t0, x0, 10
     bne s1, t0, loop    # ... while i!= 10
     lw ra, 0(sp)
@@ -100,18 +127,18 @@ loop:                   # do...
     jr ra
 
 print_list:
-    bne a0, x0, printMeAndRecurse
-    jr ra               # nothing to print
-printMeAndRecurse:
+    bne a0, x0, print_me_and_recurse
+    jr ra               # Nothing to print
+print_me_and_recurse:
     add t0, a0, x0      # t0 gets current node address
     lw a1, 0(t0)        # a1 gets value in current node
-    addi a0, x0, 1      # prepare for print integer ecall
+    addi a0, x0, 1      # Prepare for print integer ecall
     ecall
     addi a1, x0, ' '    # a0 gets address of string containing space
-    addi a0, x0, 11     # prepare for print string syscall
+    addi a0, x0, 11     # Prepare for print char syscall
     ecall
     lw a0, 4(t0)        # a0 gets address of next node
-    jal x0, print_list  # recurse. We don't have to use jal because we already have where we want to return to in ra
+    jal x0, print_list  # Recurse. The value of ra hasn't been changed.
 
 print_newline:
     addi a1, x0, '\n'   # Load in ascii code for newline
