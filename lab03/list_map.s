@@ -62,11 +62,11 @@ map:
     # What does this tell you about how you access the value and how you access the pointer to next?
 
     # Load the value of the current node into a0
-    # THINK: why a0?
+    # THINK: Why a0?
     ### YOUR CODE HERE ###
 
     # Call the function in question on that value. DO NOT use a label (be prepared to answer why).
-    # What function? Recall the parameters of "map"
+    # Hint: Where do we keep track of the function to call? Recall the parameters of "map".
     ### YOUR CODE HERE ###
 
     # Store the returned value back into the node
