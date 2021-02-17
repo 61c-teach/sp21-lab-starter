@@ -100,8 +100,13 @@ mystery:
     jr ra
 
 create_default_list:
-    addi sp, sp, -4
+    addi sp, sp, -24
     sw ra, 0(sp)
+    sw s0, 4(sp)
+    sw s1, 8(sp)
+    sw s2, 12(sp)
+    sw s3, 16(sp)
+    sw s4, 20(sp)
     li s0, 0  # pointer to the last node we handled
     li s1, 0  # number of nodes handled
     li s2, 5  # size
@@ -128,7 +133,12 @@ loop: #do...
     bne s1, t6, loop # ... while i!= 5
     mv a0, s4
     lw ra, 0(sp)
-    addi sp, sp, 4
+    lw s0, 4(sp)
+    lw s1, 8(sp)
+    lw s2, 12(sp)
+    lw s3, 16(sp)
+    lw s4, 20(sp)
+    addi sp, sp, 24
     jr ra
 
 fillArray: lw t0, 0(a1) #t0 gets array element
