@@ -10,7 +10,7 @@ TestFailed: .asciiz "Test Failed!"
 # Tests if the given implementation of accumulate is correct.
 #Input: a0 contains a pointer to the version of accumulate in question. See lotsofaccumulators.s for more details
 #
-#Output: a0 should return 0 if all tests pass, and 1 if any test fails.
+#
 #
 #The main function currently runs a simple test that checks if accumulator works on the given input array. All versions of accumulate should pass this.
 #Modify the test so that you can catch the bugs in four of the five solutions!
