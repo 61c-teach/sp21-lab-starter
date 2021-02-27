@@ -3,10 +3,12 @@
 import os
 import signal
 import subprocess
+import sys
+import time
 
 lab_dir_path = os.getcwd()
 tests_dir_path = os.path.join(os.getcwd(), "tests")
-logisim_path = os.path.join(os.getcwd(),"../tools/logisim")
+logisim_path = os.path.join(os.getcwd(),"..", "tools", "logisim")
 
 logisim_env = os.environ.copy()
 logisim_env["CS61C_TOOLS_ARGS"] = logisim_env.get("CS61C_TOOLS_ARGS", "") + " -q"
@@ -21,32 +23,29 @@ class TestCase():
     self.name = name
 
   def get_circ_path(self):
-    return os.path.join(tests_dir_path, f"{self.id}.circ")
+    return os.path.join(tests_dir_path, f"{self.id}-test.circ")
 
   def get_expected_table_path(self):
-    return os.path.join(tests_dir_path, f"reference-output/{self.id}.out")
+    return os.path.join(tests_dir_path, "reference-output", f"{self.id}-test.out")
 
   def get_actual_table_path(self):
-    return os.path.join(tests_dir_path, f"student-output/{self.id}.out")
+    return os.path.join(tests_dir_path, "student-output", f"{self.id}-test.out")
 
   def run(self):
     passed = False
     proc = None
     try:
-      proc = subprocess.Popen([logisim_path, "-tty", "table,binary,tabs", self.get_circ_path()], stdout=subprocess.PIPE, env=logisim_env)
+      proc = subprocess.Popen([sys.executable, logisim_path, "-tty", "table,binary,tabs", self.get_circ_path()], stdout=subprocess.PIPE, env=logisim_env)
 
       with open(self.get_expected_table_path(), "r") as reference:
         passed = self.check_output(proc.stdout, reference)
-        os.kill(proc.pid, signal.SIGTERM)
+        kill_proc(proc)
         if passed:
           return (True, "Matched expected output")
         else:
           return (False, "Did not match expected output")
-    finally:
-      try:
-        os.kill(proc.pid, signal.SIGTERM)
-      except Exception as e:
-        pass
+    except:
+      kill_proc(proc)
     return (False, "Errored while running test")
 
   def check_output(self, student, reference):
@@ -67,14 +66,25 @@ class TestCase():
         f.write(f"{line}\n")
     return passed
 
+def kill_proc(proc):
+  if proc.poll() == None:
+    if sys.platform == "win32":
+      os.kill(proc.pid, signal.CTRL_C_EVENT)
+      for _ in range(10):
+        if proc.poll() != None:
+          break
+        time.sleep(0.1)
+  if proc.poll() == None:
+    proc.kill()
+
 
 
 tests = [
-  TestCase("ex1-test", "Exercise 1: Sub-Circuits"),
-  TestCase("ex2-test", "Exercise 2: Add Machine"),
-  TestCase("ex3-test", "Exercise 3: FSM"),
-  TestCase("ex4-test", "Exercise 4: Splitter"),
-  TestCase("ex5-test", "Exercise 5: Rotate"),
+  TestCase("ex1", "Exercise 1: Sub-Circuits"),
+  TestCase("ex2", "Exercise 2: Add Machine"),
+  TestCase("ex3", "Exercise 3: FSM"),
+  TestCase("ex4", "Exercise 4: Splitter"),
+  TestCase("ex5", "Exercise 5: Rotate"),
 ]
 
 def run_tests(tests):
@@ -85,10 +95,10 @@ def run_tests(tests):
   for test in tests:
     did_pass, reason = test.run()
     if did_pass:
-      print(f"\tPASSED test: {test.name}")
+      print(f"PASSED test: {test.name}")
       tests_passed += 1
     else:
-      print(f"\tFAILED test: {test.name} ({reason})")
+      print(f"FAILED test: {test.name} ({reason})")
       tests_failed += 1
 
   print(f"Passed {tests_passed}/{tests_failed + tests_passed} tests")
