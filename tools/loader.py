@@ -16,8 +16,9 @@ for path in paths:
         # Windows bug: https://bugs.python.org/issue436259 (wontfix)
         if sys.platform == 'win32':
             import subprocess
-            cmd = subprocess.list2cmdline(args)
-            os.execl(args[0], cmd)
+            proc = subprocess.Popen(args)
+            proc.communicate()
+            sys.exit(proc.returncode)
         else:
             os.execv(args[0], args)
         raise Exception("Failed to start program")
