@@ -12,6 +12,13 @@ for path in paths:
     bootstrap_path = os.path.join(path, "61c_tools.py")
     if os.path.isfile(bootstrap_path):
         program_name = os.path.basename(sys.modules["__main__"].__file__)
-        os.execv(sys.executable, ["python", bootstrap_path, program_name] + sys.argv[1:])
+        args = [sys.executable, bootstrap_path, program_name] + sys.argv[1:]
+        # Windows bug: https://bugs.python.org/issue436259 (wontfix)
+        if sys.platform == 'win32':
+            import subprocess
+            cmd = subprocess.list2cmdline(args)
+            os.execl(args[0], cmd)
+        else:
+            os.execv(args[0], args)
         raise Exception("Failed to start program")
 raise Exception("Could not find your 61c-tools install")
