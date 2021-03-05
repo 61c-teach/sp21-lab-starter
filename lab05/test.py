@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 import os
+import re
 import signal
 import subprocess
 import sys
 import time
+import traceback
 
 lab_dir_path = os.getcwd()
 tests_dir_path = os.path.join(os.getcwd(), "tests")
@@ -22,6 +24,21 @@ class TestCase():
     self.id = id
     self.name = name
 
+  def fix_circ(self):
+    old_data = None
+    data = None
+    with open(self.get_circ_path(), "rt") as test_circ:
+      old_data = test_circ.read()
+    import_regex = re.compile(rf"desc=\"(file#[^\"]*\b{self.id}\.circ)\"")
+    correct_desc = f"desc=\"file#../{self.id}.circ\""
+    match = re.search(import_regex, old_data)
+    if not match or match.group(0) == correct_desc:
+      return
+    print(f"Fixing bad import in {self.id}-test.circ")
+    data = re.sub(import_regex, correct_desc, old_data)
+    with open(self.get_circ_path(), "wt") as test_circ:
+      test_circ.write(data)
+
   def get_circ_path(self):
     return os.path.join(tests_dir_path, f"{self.id}-test.circ")
 
@@ -35,6 +52,8 @@ class TestCase():
     passed = False
     proc = None
     try:
+      self.fix_circ()
+
       proc = subprocess.Popen([sys.executable, logisim_path, "-tty", "table,binary,tabs", self.get_circ_path()], stdout=subprocess.PIPE, env=logisim_env)
 
       with open(self.get_expected_table_path(), "r") as reference:
@@ -44,8 +63,14 @@ class TestCase():
           return (True, "Matched expected output")
         else:
           return (False, "Did not match expected output")
+    except KeyboardInterrupt:
+      sys.exit(1)
+    except SystemExit:
+      raise
     except:
-      kill_proc(proc)
+      traceback.print_exc()
+      if proc:
+        kill_proc(proc)
     return (False, "Errored while running test")
 
   def check_output(self, student, reference):
