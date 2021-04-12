@@ -5,6 +5,7 @@ char *report = "report.txt";
 
 int main(int argc, char **argv) {
    signal(SIGINT, signal_callback_handler);
+   signal(SIGCHLD, signal_callback_handler);
 
 // default configs
    server_port = 8000;

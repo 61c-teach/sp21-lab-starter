@@ -1,5 +1,7 @@
 #include "server_utils.h"
 #include <unistd.h>
+#include <string.h>
+#include <sys/wait.h>
 
 /** Global configuration variables definitions. */
 int server_fd;
@@ -112,12 +114,35 @@ void http_make_error(int socket_fd, int status) {
 }
 
 void signal_callback_handler(int signum) {
-   printf("Caught signal %d: %s\n", signum, strsignal(signum));
-   printf("Closing socket %d\n", server_fd);
-   if (shutdown(server_fd, SHUT_RDWR) < 0)
-      perror("Failed to shutdown socket at server_fd (ignoring)\n");
-   if (close(server_fd) < 0) perror("Failed to close server_fd (ignoring)\n");
-   exit(EXIT_SUCCESS);
+   if (signum == SIGCHLD) {
+      /* Reap children to prevent accumulation of zombies */
+      for (;;) {
+         int wstatus;
+         int pid = waitpid(-1, &wstatus, WNOHANG);
+         if (pid <= 0) {
+            /* No more zombies, we're done here */
+            break;
+         }
+         /* Print some debug info about crashed processes */
+         if (WIFEXITED(wstatus)) {
+            int status = WEXITSTATUS(wstatus);
+            if (status != 0) {
+               printf("[WARN] Worker process %d exited unexpectedly with code %d\n",
+                      pid, status);
+            }
+         } else if (WIFSIGNALED(wstatus)) {
+            printf("[WARN] Worker process %d caught fatal signal %d: %s\n",
+                   pid, WTERMSIG(wstatus), strsignal(WTERMSIG(wstatus)));
+         }
+      }
+   } else {
+      printf("Caught signal %d: %s\n", signum, strsignal(signum));
+      printf("Closing socket %d\n", server_fd);
+      if (shutdown(server_fd, SHUT_RDWR) < 0)
+         perror("Failed to shutdown socket at server_fd (ignoring)\n");
+      if (close(server_fd) < 0) perror("Failed to close server_fd (ignoring)\n");
+      exit(EXIT_SUCCESS);
+   }
 }
 
 void exit_with_usage(char *executable_name) {
