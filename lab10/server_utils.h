@@ -24,9 +24,9 @@
 #include "libhttp/libhttp.h"
 
 /** Global configuration variables. */
-int server_fd;
-int server_port;
-char *server_files_directory;
+extern int server_fd;
+extern int server_port;
+extern char *server_files_directory;
 
 extern char *USAGE;
 extern char *report;

@@ -1,6 +1,11 @@
 #include "server_utils.h"
 #include <unistd.h>
 
+/** Global configuration variables definitions. */
+int server_fd;
+int server_port;
+char *server_files_directory;
+
 char *header_tag_left = "<center><h1>";
 char *header_tag_right = "</h1><hr></center>";
 char *content_type = "Content-Type";
